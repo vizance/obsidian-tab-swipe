@@ -1,0 +1,58 @@
+/*
+ * Position indicator shown briefly after a swipe switches tabs.
+ *
+ * The dots sit at the lower edge of Obsidian's mobile navigation bar. They stay
+ * inside the navigation bar's own box on purpose, so they never overlap the
+ * operating system home indicator below it.
+ *
+ * Override any of this from a CSS snippet — every selector below is namespaced
+ * with the tab-swipe prefix.
+ */
+
+/* Added by the plugin only while the indicator exists, so the absolutely
+   positioned dot row has something to anchor to. */
+.tab-swipe-host {
+	position: relative;
+}
+
+.tab-swipe-indicator {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 2px;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 6px;
+
+	/* A long row of dots is clipped rather than allowed to wrap or stretch the
+	   navigation bar. */
+	flex-wrap: nowrap;
+	overflow: hidden;
+
+	/* Taps fall straight through to the navigation bar buttons underneath. */
+	pointer-events: none;
+
+	opacity: 1;
+	transition: opacity 180ms ease-out;
+}
+
+.tab-swipe-indicator.is-hidden {
+	opacity: 0;
+}
+
+.tab-swipe-indicator__dot {
+	width: 5px;
+	height: 5px;
+	flex: 0 0 auto;
+	border-radius: 50%;
+	background-color: var(--text-muted);
+	opacity: 0.35;
+	transition: opacity 180ms ease-out;
+}
+
+.tab-swipe-indicator__dot.is-current {
+	background-color: var(--text-accent);
+	opacity: 1;
+}

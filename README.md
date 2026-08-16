@@ -17,6 +17,8 @@ The order wraps at both ends, so with two or three tabs open any tab is one swip
 
 Taps are untouched. A touch only counts as a swipe when it moves at least 40 px horizontally *and* moves further horizontally than vertically. Everything below that threshold passes straight through, so the navigation bar buttons keep working exactly as before.
 
+After a switch, a row of dots appears at the lower edge of the navigation bar: one dot per open tab, with the current one highlighted. It fades out on its own after 300 ms. That row answers the two things a swipe leaves open — did that register, and where am I now, which matters because the order wraps.
+
 Desktop is unaffected — the plugin registers nothing there.
 
 ## Install
@@ -28,7 +30,7 @@ Not in the community plugin browser yet. Install with [BRAT](https://github.com/
 3. Paste `vizance/obsidian-tab-swipe` and confirm.
 4. Enable **Tab Swipe** in Settings → Community plugins.
 
-Manual install: download `main.js` and `manifest.json` from [Releases](https://github.com/vizance/obsidian-tab-swipe/releases) into `.obsidian/plugins/obsidian-tab-swipe/`.
+Manual install: download `main.js`, `manifest.json` and `styles.css` from [Releases](https://github.com/vizance/obsidian-tab-swipe/releases) into `.obsidian/plugins/obsidian-tab-swipe/`.
 
 ## Known limitations
 
@@ -37,6 +39,16 @@ Manual install: download `main.js` and `manifest.json` from [Releases](https://g
 **Split panes are treated as one flat list.** Tab order comes from Obsidian's main-area leaf iteration. If you split the root workspace into panes holding A, B and C, D, swiping forward from B moves to C — the order is the flat sequence A, B, C, D with no grouping by pane. Sidebar notes are never part of the cycle.
 
 **No settings.** The 40 px threshold is a constant. If it does not suit your thumb, change `SWIPE_THRESHOLD_PX` in `src/gesture/navbar-swipe.ts` and rebuild.
+
+## Restyling the indicator
+
+Every selector is namespaced with a `tab-swipe` prefix, so a CSS snippet can override the dots without touching the plugin:
+
+```css
+.tab-swipe-indicator { gap: 10px; bottom: 4px; }
+.tab-swipe-indicator__dot { width: 6px; height: 6px; }
+.tab-swipe-indicator__dot.is-current { background-color: var(--color-orange); }
+```
 
 ## Development
 

@@ -17,6 +17,8 @@
 
 點擊完全不受影響。只有水平位移達到 40 px、而且水平大於垂直，才會被判定成滑動。低於門檻的觸控直接放行，導覽列上的按鈕照常運作。
 
+切換之後，導覽列下緣會浮現一排小圓點，一個分頁一顆，目前所在的那顆會亮起來，300 毫秒後自己淡掉。這排點回答滑動留下的兩個問題：剛剛那下算不算數，以及我現在在第幾個。後者在兩端循環的情況下特別需要。
+
 桌面版完全不受影響，外掛在桌面不註冊任何東西。
 
 ## 安裝
@@ -28,7 +30,7 @@
 3. 貼上 `vizance/obsidian-tab-swipe` 並確認。
 4. 回到「設定」的「第三方外掛」啟用 **Tab Swipe**。
 
-手動安裝：從 [Releases](https://github.com/vizance/obsidian-tab-swipe/releases) 下載 `main.js` 與 `manifest.json`，放進 `.obsidian/plugins/obsidian-tab-swipe/`。
+手動安裝：從 [Releases](https://github.com/vizance/obsidian-tab-swipe/releases) 下載 `main.js`、`manifest.json` 與 `styles.css`，放進 `.obsidian/plugins/obsidian-tab-swipe/`。
 
 ## 已知限制
 
@@ -37,6 +39,16 @@
 **分割視窗被當成一條平坦的清單。** 分頁順序取自 Obsidian 主區域的 leaf 走訪順序。如果你把根區切成兩個窗格，分別放 A、B 和 C、D，從 B 往後滑會到 C，因為順序就是平坦的 A、B、C、D，不會依窗格分組。側欄裡的筆記永遠不會被切到。
 
 **沒有設定畫面。** 40 px 是寫死的常數。如果不合你的手感，改 `src/gesture/navbar-swipe.ts` 裡的 `SWIPE_THRESHOLD_PX` 再重新建置。
+
+## 改指示點的樣式
+
+所有選擇器都掛了 `tab-swipe` 前綴，用 CSS snippet 就能覆寫，不用動到外掛：
+
+```css
+.tab-swipe-indicator { gap: 10px; bottom: 4px; }
+.tab-swipe-indicator__dot { width: 6px; height: 6px; }
+.tab-swipe-indicator__dot.is-current { background-color: var(--color-orange); }
+```
 
 ## 開發
 

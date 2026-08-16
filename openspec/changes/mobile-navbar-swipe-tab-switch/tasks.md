@@ -30,9 +30,9 @@
 
 ## 6. 切換回饋指示點
 
-- [ ] 6.1 依設計決策「切換後以頁面指示點回饋」實作 Position indicator on a completed switch：切換成功後在導覽列下緣呈現一排圓點，數量等於分頁總數，目前位置那一點標為 current。驗證：`tests/tab-indicator.test.ts` 覆蓋 spec 中 dot row contents 表格的四列。
-- [ ] 6.2 實作 Indicator fades out on its own：指示點在 300 毫秒後自行消失，期間再次切換則重用同一元素並重設計時器。驗證：測試以假計時器斷言 300 毫秒後指示點不可見，且第一次切換後 100 毫秒再切一次時容器數量仍為一。
-- [ ] 6.3 實作 No indicator when no switch happened：切換未實際發生時不建立容器。驗證：測試斷言單一分頁與焦點位於側欄兩種情況皆未建立任何容器元素。
-- [ ] 6.4 依設計決策「指示點的 DOM 生命週期與清理」實作 Indicator placement and cleanup：容器由外掛自有、使用專屬 class 前綴、置於導覽列下緣，卸載時移除容器並取消待執行的計時器。驗證：測試斷言連續三次切換只建立一個容器，且銷毀後容器不在父節點上、計時器已取消。
-- [ ] 6.5 指示點樣式與文件到位：`styles.css` 定義圓點外觀與導覽列下緣定位，容器不換行且溢出隱藏；兩份 README 補上指示點行為說明與可用 CSS snippet 覆寫的方式。驗證：內容審閱確認兩份 README 皆描述指示點與覆寫方式，且建置後 `styles.css` 隨 Release 一併附上。
+- [x] 6.1 依設計決策「切換後以頁面指示點回饋」實作 Position indicator on a completed switch：切換成功後在導覽列下緣呈現一排圓點，數量等於分頁總數，目前位置那一點標為 current。驗證：`tests/tab-indicator.test.ts` 覆蓋 spec 中 dot row contents 表格的四列。
+- [x] 6.2 實作 Indicator fades out on its own：指示點在 300 毫秒後自行消失，期間再次切換則重用同一元素並重設計時器。驗證：測試以假計時器斷言 300 毫秒後指示點不可見，且第一次切換後 100 毫秒再切一次時容器數量仍為一。
+- [x] 6.3 實作 No indicator when no switch happened：切換未實際發生時不建立容器。驗證：測試斷言單一分頁與焦點位於側欄兩種情況皆未建立任何容器元素。
+- [x] 6.4 依設計決策「指示點的 DOM 生命週期與清理」實作 Indicator placement and cleanup：容器由外掛自有、使用專屬 class 前綴、置於導覽列下緣，卸載時移除容器並取消待執行的計時器。驗證：測試斷言連續三次切換只建立一個容器，且銷毀後容器不在父節點上、計時器已取消。
+- [x] 6.5 指示點樣式與文件到位：`styles.css` 定義圓點外觀與導覽列下緣定位，容器不換行且溢出隱藏；兩份 README 補上指示點行為說明與可用 CSS snippet 覆寫的方式。驗證：內容審閱確認兩份 README 皆描述指示點與覆寫方式，且建置後 `styles.css` 隨 Release 一併附上。
 - [ ] 6.6 發布含指示點的版本並完成實機確認：指示點在導覽列下緣可見、標對目前分頁、300 毫秒後自行消失、與 iOS home indicator 不重疊。驗證：逐項手動確認並記錄結果。

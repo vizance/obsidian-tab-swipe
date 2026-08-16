@@ -31,16 +31,28 @@ export function collectTabOrder<TLeaf>(workspace: TabWorkspace<TLeaf>): TLeaf[] 
 }
 
 /**
- * Activate the tab adjacent to the current one.
+ * The outcome of a successful switch: which tab is now active, where it sits in
+ * the order, and how many tabs there are. The position feeds the indicator so it
+ * does not have to walk the tab order a second time.
+ */
+export interface TabSwitchResult<TLeaf> {
+	leaf: TLeaf;
+	/** Zero-based position of the newly active tab. */
+	index: number;
+	/** Total number of tabs in the main area. */
+	total: number;
+}
+
+/**
+ * Activate the tab adjacent to the current one and report its position.
  *
  * Wraps at both ends, so any tab is reachable in a single swipe when only a
- * handful are open. Returns the newly activated tab, or null when nothing was
- * changed.
+ * handful are open. Returns null when nothing was changed.
  */
-export function cycleTab<TLeaf>(
+export function cycleTabWithPosition<TLeaf>(
 	workspace: TabWorkspace<TLeaf>,
 	direction: SwipeDirection,
-): TLeaf | null {
+): TabSwitchResult<TLeaf> | null {
 	const leaves = collectTabOrder(workspace);
 
 	if (leaves.length < 2) {
@@ -64,5 +76,17 @@ export function cycleTab<TLeaf>(
 	const target = leaves[targetIndex];
 
 	workspace.setActiveLeaf(target, { focus: true });
-	return target;
+	return { leaf: target, index: targetIndex, total: leaves.length };
+}
+
+/**
+ * Activate the tab adjacent to the current one.
+ *
+ * Returns the newly activated tab, or null when nothing was changed.
+ */
+export function cycleTab<TLeaf>(
+	workspace: TabWorkspace<TLeaf>,
+	direction: SwipeDirection,
+): TLeaf | null {
+	return cycleTabWithPosition(workspace, direction)?.leaf ?? null;
 }
