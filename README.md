@@ -15,7 +15,7 @@ Swipe horizontally on the bottom navigation bar:
 
 The order wraps at both ends, so with two or three tabs open any tab is one swipe away.
 
-Taps are untouched. A touch only counts as a swipe when it moves at least 40 px horizontally *and* moves further horizontally than vertically. Everything below that threshold passes straight through, so the six navigation bar buttons keep working exactly as before.
+Taps are untouched. A touch only counts as a swipe when it moves at least 40 px horizontally *and* moves further horizontally than vertically. Everything below that threshold passes straight through, so the navigation bar buttons keep working exactly as before.
 
 Desktop is unaffected — the plugin registers nothing there.
 
