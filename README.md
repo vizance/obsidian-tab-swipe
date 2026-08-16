@@ -17,7 +17,9 @@ The order wraps at both ends, so with two or three tabs open any tab is one swip
 
 Taps are untouched. A touch only counts as a swipe when it moves at least 40 px horizontally *and* moves further horizontally than vertically. Everything below that threshold passes straight through, so the navigation bar buttons keep working exactly as before.
 
-After a switch, a row of dots appears at the lower edge of the navigation bar: one dot per open tab, with the current one highlighted. It fades out on its own after 300 ms. That row answers the two things a swipe leaves open — did that register, and where am I now, which matters because the order wraps.
+A row of dots sits at the lower edge of the navigation bar: one dot per open tab, with the current one highlighted. It stays there, so you can see where you are at a glance rather than only in the moment after a swipe — which matters because the order wraps.
+
+The dots track the workspace, not this plugin. Switch tabs from Obsidian's own tab list, follow a link into a new tab, or close one, and the dots follow. They hide themselves when fewer than two tabs are open, since a lone dot says nothing.
 
 Desktop is unaffected — the plugin registers nothing there.
 

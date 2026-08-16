@@ -1,5 +1,5 @@
 /*
- * Position indicator shown briefly after a swipe switches tabs.
+ * Position indicator showing which tab is active.
  *
  * The dots sit at the lower edge of Obsidian's mobile navigation bar. They stay
  * inside the navigation bar's own box on purpose, so they never overlap the
@@ -33,13 +33,6 @@
 
 	/* Taps fall straight through to the navigation bar buttons underneath. */
 	pointer-events: none;
-
-	opacity: 1;
-	transition: opacity 180ms ease-out;
-}
-
-.tab-swipe-indicator.is-hidden {
-	opacity: 0;
 }
 
 .tab-swipe-indicator__dot {
@@ -49,7 +42,7 @@
 	border-radius: 50%;
 	background-color: var(--text-muted);
 	opacity: 0.35;
-	transition: opacity 180ms ease-out;
+	transition: opacity 120ms ease-out, background-color 120ms ease-out;
 }
 
 .tab-swipe-indicator__dot.is-current {

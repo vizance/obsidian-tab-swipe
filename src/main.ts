@@ -1,9 +1,9 @@
 import { Platform, Plugin, type WorkspaceLeaf } from 'obsidian';
 
 import { type SwipeTracker } from './gesture/navbar-swipe';
+import { bindIndicatorSync } from './plugin/indicator-sync';
 import { bindNavbarSwipe, readTouchSample } from './plugin/navbar-binding';
-import { handleSwipe } from './plugin/swipe-handler';
-import { type TabWorkspace } from './tabs/tab-cycler';
+import { cycleTab, type TabWorkspace } from './tabs/tab-cycler';
 import { TabPositionIndicator } from './ui/tab-indicator';
 
 /**
@@ -20,10 +20,7 @@ export default class TabSwipePlugin extends Plugin {
 		this.app.workspace.onLayoutReady(() => {
 			const found = document.querySelector(MOBILE_NAVBAR_SELECTOR);
 			const navbar = found instanceof HTMLElement ? found : null;
-
-			if (Platform.isMobile && navbar !== null) {
-				this.indicator = new TabPositionIndicator(navbar);
-			}
+			const workspace: TabWorkspace<WorkspaceLeaf> = this.app.workspace;
 
 			this.tracker = bindNavbarSwipe<HTMLElement>({
 				isMobile: Platform.isMobile,
@@ -34,15 +31,33 @@ export default class TabSwipePlugin extends Plugin {
 					this.registerDomEvent(element, type, handler);
 				},
 				onSwipe: (direction) => {
-					const indicator = this.indicator;
-					if (indicator === null) {
-						return;
-					}
-
-					const workspace: TabWorkspace<WorkspaceLeaf> = this.app.workspace;
-					handleSwipe(workspace, direction, indicator);
+					// Switching is all a swipe does. The indicator redraws from the
+					// workspace event this causes, exactly as it would for a tab
+					// change made any other way.
+					cycleTab(workspace, direction);
 				},
 				readSample: readTouchSample,
+			});
+
+			if (!Platform.isMobile || navbar === null) {
+				return;
+			}
+
+			const indicator = new TabPositionIndicator(navbar);
+			this.indicator = indicator;
+
+			bindIndicatorSync({
+				workspace,
+				indicator,
+				subscribe: (event, handler) => {
+					// Obsidian types each event name as its own overload, so the
+					// union has to be narrowed before the call.
+					const ref =
+						event === 'active-leaf-change'
+							? this.app.workspace.on('active-leaf-change', handler)
+							: this.app.workspace.on('layout-change', handler);
+					this.registerEvent(ref);
+				},
 			});
 		});
 	}

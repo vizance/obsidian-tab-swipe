@@ -1,14 +1,12 @@
 // @vitest-environment jsdom
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	CONTAINER_CLASS,
 	CURRENT_DOT_CLASS,
 	DOT_CLASS,
-	HIDDEN_CLASS,
 	HOST_CLASS,
-	INDICATOR_VISIBLE_MS,
 	TabPositionIndicator,
 } from '../src/ui/tab-indicator';
 
@@ -20,21 +18,20 @@ function makeNavbar(): HTMLElement {
 }
 
 function readDots(navbar: HTMLElement) {
-	const container = navbar.querySelector(`.${CONTAINER_CLASS}`);
 	const dots = Array.from(navbar.querySelectorAll(`.${DOT_CLASS}`));
 
 	return {
-		container,
+		container: navbar.querySelector(`.${CONTAINER_CLASS}`),
 		count: dots.length,
 		currentPosition: dots.findIndex((dot) => dot.classList.contains(CURRENT_DOT_CLASS)),
 	};
 }
 
-describe('Position indicator on a completed switch', () => {
-	beforeEach(() => {
-		document.body.replaceChildren();
-	});
+beforeEach(() => {
+	document.body.replaceChildren();
+});
 
+describe('Indicator reflects the active tab', () => {
 	// One case per row of the spec example table "dot row contents".
 	// Positions in the table are 1-based; the API takes a 0-based index.
 	const dotRowCases = [
@@ -50,7 +47,7 @@ describe('Position indicator on a completed switch', () => {
 			const navbar = makeNavbar();
 			const indicator = new TabPositionIndicator(navbar);
 
-			indicator.show(activePosition - 1, total);
+			indicator.render(activePosition - 1, total);
 
 			const dots = readDots(navbar);
 			expect(dots.count).toBe(total);
@@ -62,101 +59,122 @@ describe('Position indicator on a completed switch', () => {
 		const navbar = makeNavbar();
 		const indicator = new TabPositionIndicator(navbar);
 
-		indicator.show(1, 4);
+		indicator.render(1, 4);
 
 		expect(navbar.querySelectorAll(`.${DOT_CLASS}.${CURRENT_DOT_CLASS}`)).toHaveLength(1);
 	});
 });
 
-describe('Indicator fades out on its own', () => {
-	beforeEach(() => {
-		document.body.replaceChildren();
-		vi.useFakeTimers();
-	});
-
-	afterEach(() => {
-		vi.useRealTimers();
-	});
-
-	it('hides the dots once the visible window passes', () => {
+describe('Indicator stays visible', () => {
+	it('renders without any gesture having happened', () => {
 		const navbar = makeNavbar();
 		const indicator = new TabPositionIndicator(navbar);
 
-		indicator.show(0, 3);
-		expect(readDots(navbar).container?.classList.contains(HIDDEN_CLASS)).toBe(false);
+		indicator.render(0, 3);
 
-		vi.advanceTimersByTime(INDICATOR_VISIBLE_MS);
-
-		expect(readDots(navbar).container?.classList.contains(HIDDEN_CLASS)).toBe(true);
+		expect(readDots(navbar).count).toBe(3);
 	});
 
-	it('reuses the element and restarts the timer on a second swipe', () => {
+	it('keeps the dots after many unrelated re-renders', () => {
 		const navbar = makeNavbar();
 		const indicator = new TabPositionIndicator(navbar);
 
-		indicator.show(0, 3);
-		const firstContainer = readDots(navbar).container;
+		for (let i = 0; i < 20; i += 1) {
+			indicator.render(i % 3, 3);
+		}
 
-		vi.advanceTimersByTime(100);
-		indicator.show(1, 3);
+		const dots = readDots(navbar);
+		expect(dots.count).toBe(3);
+		expect(dots.currentPosition).toBe(19 % 3);
+	});
 
-		expect(navbar.querySelectorAll(`.${CONTAINER_CLASS}`)).toHaveLength(1);
-		expect(readDots(navbar).container).toBe(firstContainer);
-		expect(readDots(navbar).currentPosition).toBe(1);
+	it('applies no hiding class to the container', () => {
+		const navbar = makeNavbar();
+		const indicator = new TabPositionIndicator(navbar);
 
-		// 250 ms after the first swipe, but only 150 ms after the second — the
-		// restarted timer means the dots are still visible.
-		vi.advanceTimersByTime(150);
-		expect(readDots(navbar).container?.classList.contains(HIDDEN_CLASS)).toBe(false);
+		indicator.render(0, 3);
 
-		vi.advanceTimersByTime(INDICATOR_VISIBLE_MS);
-		expect(readDots(navbar).container?.classList.contains(HIDDEN_CLASS)).toBe(true);
+		expect(readDots(navbar).container?.className).toBe(CONTAINER_CLASS);
+	});
+});
+
+describe('Indicator hidden when fewer than two tabs are open', () => {
+	it('shows nothing when one tab is open', () => {
+		const navbar = makeNavbar();
+		const indicator = new TabPositionIndicator(navbar);
+
+		indicator.render(0, 1);
+
+		expect(readDots(navbar).count).toBe(0);
+	});
+
+	it('shows nothing when no tab is open', () => {
+		const navbar = makeNavbar();
+		const indicator = new TabPositionIndicator(navbar);
+
+		indicator.render(-1, 0);
+
+		expect(readDots(navbar).count).toBe(0);
+	});
+
+	it('clears an existing row when tabs drop below two', () => {
+		const navbar = makeNavbar();
+		const indicator = new TabPositionIndicator(navbar);
+
+		indicator.render(1, 3);
+		expect(readDots(navbar).count).toBe(3);
+
+		indicator.render(0, 1);
+		expect(readDots(navbar).count).toBe(0);
+	});
+
+	it('reappears when a second tab is opened', () => {
+		const navbar = makeNavbar();
+		const indicator = new TabPositionIndicator(navbar);
+
+		indicator.render(0, 1);
+		indicator.render(1, 2);
+
+		const dots = readDots(navbar);
+		expect(dots.count).toBe(2);
+		expect(dots.currentPosition).toBe(1);
 	});
 });
 
 describe('Indicator placement and cleanup', () => {
-	beforeEach(() => {
-		document.body.replaceChildren();
-		vi.useFakeTimers();
-	});
-
-	afterEach(() => {
-		vi.useRealTimers();
-	});
-
-	it('creates one container across repeated switches and keeps it inside the navbar', () => {
+	it('keeps the previous contents when focus leaves the main area', () => {
 		const navbar = makeNavbar();
 		const indicator = new TabPositionIndicator(navbar);
 
-		indicator.show(0, 3);
-		indicator.show(1, 3);
-		indicator.show(2, 3);
+		indicator.render(1, 3);
+		indicator.render(-1, 3);
+
+		const dots = readDots(navbar);
+		expect(dots.count).toBe(3);
+		expect(dots.currentPosition).toBe(1);
+	});
+
+	it('creates one container across repeated updates and keeps it inside the navbar', () => {
+		const navbar = makeNavbar();
+		const indicator = new TabPositionIndicator(navbar);
+
+		indicator.render(0, 3);
+		indicator.render(1, 3);
+		indicator.render(2, 3);
 
 		expect(navbar.querySelectorAll(`.${CONTAINER_CLASS}`)).toHaveLength(1);
 		expect(readDots(navbar).container?.parentElement).toBe(navbar);
 		expect(navbar.classList.contains(HOST_CLASS)).toBe(true);
 	});
 
-	it('removes the container and cancels the pending fade on destroy', () => {
+	it('removes the container and its host classes on destroy', () => {
 		const navbar = makeNavbar();
 		const indicator = new TabPositionIndicator(navbar);
 
-		indicator.show(0, 3);
-		expect(indicator.hasPendingFade()).toBe(true);
-
+		indicator.render(0, 3);
 		indicator.destroy();
 
 		expect(navbar.querySelector(`.${CONTAINER_CLASS}`)).toBeNull();
-		expect(indicator.hasPendingFade()).toBe(false);
 		expect(navbar.classList.contains(HOST_CLASS)).toBe(false);
-	});
-
-	it('does not render anything when there are no tabs to describe', () => {
-		const navbar = makeNavbar();
-		const indicator = new TabPositionIndicator(navbar);
-
-		indicator.show(0, 0);
-
-		expect(navbar.querySelector(`.${CONTAINER_CLASS}`)).toBeNull();
 	});
 });

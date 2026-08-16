@@ -1,12 +1,12 @@
 ## ADDED Requirements
 
-### Requirement: Position indicator on a completed switch
+### Requirement: Indicator reflects the active tab
 
-The plugin SHALL show a row of position dots at the lower edge of the mobile navigation bar whenever a swipe completes a tab switch. The row SHALL contain exactly one dot per open tab, and the dot at the newly active position SHALL be marked as current while every other dot SHALL be marked as inactive.
+The plugin SHALL show a row of position dots at the lower edge of the mobile navigation bar. The row SHALL contain exactly one dot per open tab, and the dot at the active position SHALL be marked as current while every other dot SHALL be marked as inactive.
 
-#### Scenario: Switching among three tabs
+#### Scenario: Three tabs with the second active
 
-- **WHEN** three tabs are open and a swipe activates the second tab
+- **WHEN** three tabs are open and the second tab is active
 - **THEN** the indicator shows three dots and the second dot is marked as current
 
 #### Scenario: Wrapping to the first tab
@@ -16,51 +16,75 @@ The plugin SHALL show a row of position dots at the lower edge of the mobile nav
 
 ##### Example: dot row contents
 
-| Open tabs | Newly active position | Dot count | Current dot |
-| --------- | --------------------- | --------- | ----------- |
-| 3         | 2                     | 3         | 2           |
-| 3         | 1                     | 3         | 1           |
-| 2         | 2                     | 2         | 2           |
-| 5         | 4                     | 5         | 4           |
+| Open tabs | Active position | Dot count | Current dot |
+| --------- | --------------- | --------- | ----------- |
+| 3         | 2               | 3         | 2           |
+| 3         | 1               | 3         | 1           |
+| 2         | 2               | 2         | 2           |
+| 5         | 4               | 5         | 4           |
 
-### Requirement: Indicator fades out on its own
+### Requirement: Indicator stays visible
 
-The indicator SHALL disappear 300 milliseconds after the switch without any user action. A further switch during that window SHALL reuse the existing indicator element and restart the timer rather than adding a second element.
+The indicator SHALL remain on screen for as long as at least two tabs are open. It SHALL NOT fade out, and it SHALL NOT require any user action to appear.
 
-#### Scenario: Indicator disappears after the delay
+#### Scenario: Indicator is present without any gesture
 
-- **WHEN** a swipe completes a tab switch and 300 milliseconds pass with no further swipe
-- **THEN** the indicator is no longer visible
+- **WHEN** the plugin finishes loading on a mobile platform with three tabs open
+- **THEN** the indicator is already visible and marks the active tab
 
-#### Scenario: Two swipes in quick succession
+#### Scenario: Indicator persists long after a switch
 
-- **WHEN** a second swipe completes 100 milliseconds after the first
-- **THEN** exactly one indicator element exists, its dots reflect the second switch, and the fade-out timer restarts from the second switch
+- **WHEN** a swipe switches tabs and one minute passes with no further interaction
+- **THEN** the indicator is still visible and still marks the active tab
 
-### Requirement: No indicator when no switch happened
+### Requirement: Indicator hidden when fewer than two tabs are open
 
-The plugin SHALL NOT create or show the indicator when a swipe produced no tab change.
+The indicator SHALL be hidden when fewer than two tabs are open, because a single dot carries no information. It SHALL reappear as soon as a second tab is opened.
 
-#### Scenario: Swipe with a single tab open
+#### Scenario: Only one tab open
 
-- **WHEN** one tab is open and a swipe is recognized
-- **THEN** no indicator element is created and nothing appears on screen
+- **WHEN** exactly one tab is open
+- **THEN** no dots are visible
 
-#### Scenario: Swipe while focus sits outside the main area
+#### Scenario: Second tab opened
 
-- **WHEN** focus sits in a sidebar so no tab change occurs and a swipe is recognized
-- **THEN** no indicator element is created
+- **WHEN** one tab is open and the user opens a second tab
+- **THEN** two dots become visible and the dot for the newly active tab is marked as current
+
+### Requirement: Indicator stays in sync with tab changes from any source
+
+The indicator SHALL derive its contents from the current workspace tab state, and SHALL update whenever that state changes, regardless of what caused the change. Swiping SHALL NOT be treated as a special case.
+
+#### Scenario: Tab changed from the built-in tab list
+
+- **WHEN** the user switches tabs by opening Obsidian's own tab list instead of swiping
+- **THEN** the indicator marks the newly active tab
+
+#### Scenario: Tab closed
+
+- **WHEN** three tabs are open and the user closes one of them
+- **THEN** the indicator shows two dots and marks whichever tab is now active
+
+#### Scenario: New tab opened
+
+- **WHEN** two tabs are open and the user opens a note in a new tab
+- **THEN** the indicator shows three dots and marks the newly opened tab
+
+#### Scenario: Focus moves outside the main area
+
+- **WHEN** focus moves to a sidebar so no main-area tab is active
+- **THEN** the indicator keeps the contents it last showed rather than clearing or marking an arbitrary dot
 
 ### Requirement: Indicator placement and cleanup
 
-The indicator SHALL be a single container element owned by the plugin, placed within the bounds of the navigation bar at its lower edge so that it never overlaps the operating system home indicator. The plugin SHALL use its own class prefix for the container and the dots so that theme styles do not collide with it. On unload the plugin SHALL remove the container and cancel any pending fade-out timer.
+The indicator SHALL be a single container element owned by the plugin, placed within the bounds of the navigation bar at its lower edge so that it never overlaps the operating system home indicator. The plugin SHALL use its own class prefix for the container and the dots so that theme styles do not collide with it. On unload the plugin SHALL remove the container and release its subscriptions to workspace events.
 
-#### Scenario: Container is reused across switches
+#### Scenario: Container is reused across updates
 
-- **WHEN** three separate swipes each complete a tab switch
+- **WHEN** the tab state changes three times
 - **THEN** exactly one indicator container has been created and it was updated in place each time
 
 #### Scenario: Cleanup on unload
 
-- **WHEN** the plugin is unloaded after at least one switch
-- **THEN** the indicator container is removed from the navigation bar and no fade-out timer remains pending
+- **WHEN** the plugin is unloaded
+- **THEN** the indicator container is removed from the navigation bar and the navigation bar carries none of the plugin's classes

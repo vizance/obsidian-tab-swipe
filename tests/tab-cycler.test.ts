@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { cycleTab, type TabWorkspace } from '../src/tabs/tab-cycler';
+import { cycleTab, describeTabPosition, type TabWorkspace } from '../src/tabs/tab-cycler';
 import type { SwipeDirection } from '../src/gesture/navbar-swipe';
 
 /**
@@ -119,5 +119,25 @@ describe('Tab order source and split view limitation', () => {
 
 		expect(cycleTab(workspace, 'next')).toBeNull();
 		expect(setActiveLeaf).not.toHaveBeenCalled();
+	});
+});
+
+describe('describeTabPosition', () => {
+	it('reports the active position and the tab count', () => {
+		const { workspace } = fakeWorkspace(['A', 'B', 'C'], 'B');
+
+		expect(describeTabPosition(workspace)).toEqual({ index: 1, total: 3 });
+	});
+
+	it('reports index -1 when focus sits outside the main area', () => {
+		const { workspace } = fakeWorkspace(['A', 'B'], 'sidebar-note');
+
+		expect(describeTabPosition(workspace)).toEqual({ index: -1, total: 2 });
+	});
+
+	it('reports a zero total when no tab is open', () => {
+		const { workspace } = fakeWorkspace([], null);
+
+		expect(describeTabPosition(workspace)).toEqual({ index: -1, total: 0 });
 	});
 });
